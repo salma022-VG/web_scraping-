@@ -1,0 +1,9 @@
+# Tras instalar, correr una vez: python -m scrapling install (o `scrapling install`)
+# para descargar los navegadores que usan los fetchers stealth.
+scrapling[fetchers]>=0.4
+feedparser>=6.0
+beautifulsoup4>=4.12
+lxml>=5.2
+trafilatura>=1.8
+pandas>=2.2
+openpyxl>=3.1
