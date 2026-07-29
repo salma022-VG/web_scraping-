@@ -1,0 +1,12 @@
+# Entorno virtual de Python (es especifico de cada computador, no se sube)
+.venv/
+__pycache__/
+*.pyc
+
+# Excel generados por cada busqueda (son resultados temporales, no codigo)
+Monitoreo_Noticias_*.xlsx
+
+# Archivos propios del sistema operativo / editor
+.DS_Store
+Thumbs.db
+.vscode/

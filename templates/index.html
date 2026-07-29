@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monitoreo de Noticias - Bogota y Colombia</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ version_de('style.css') }}">
+</head>
+<body>
+
+  <header class="topbar">
+    <h1>Monitoreo de Noticias</h1>
+    <p class="subtitulo">Bogota (Hacienda, Infraestructura, Vivienda, Movilidad, Inmobiliario, Alcaldia, Catastro) + Top 3 Nacional</p>
+  </header>
+
+  <main class="contenedor">
+
+    <!-- Panel de controles: elegir la franja horaria y disparar la busqueda -->
+    <section class="panel controles">
+      <div class="campo">
+        <label for="ventana">Franja horaria a buscar</label>
+        <select id="ventana">
+          <option value="">Automatica (segun la hora actual)</option>
+          <option value="6">Ultimas 6 horas</option>
+          <option value="12">Ultimas 12 horas</option>
+          <option value="24">Ultimas 24 horas</option>
+        </select>
+      </div>
+
+      <div class="botones">
+        <button id="btnBuscar" class="btn btn-primario">Busqueda</button>
+        <button id="btnExportar" class="btn btn-secundario" disabled>Exportar a Excel</button>
+        <button id="btnTogglePalabras" class="btn btn-secundario">Palabras clave</button>
+      </div>
+    </section>
+
+    <!-- Panel para ver / agregar / quitar palabras de busqueda de Bogota,
+         sin tener que abrir el Excel a mano (util cuando la pagina esta
+         publicada en internet y no se tiene acceso directo al servidor). -->
+    <section id="panelPalabras" class="panel oculto">
+      <h2>Palabras clave de busqueda (Bogota)</h2>
+      <p class="ayuda-texto">
+        Estas son las categorias y palabras que se buscan en Google Noticias.
+        Agrega o quita las que necesites; el cambio se aplica en la
+        siguiente busqueda que hagas.
+      </p>
+
+      <div id="listaCategorias" class="categorias-grid"></div>
+
+      <form id="formAgregarPalabra" class="form-agregar">
+        <input type="text" id="inputCategoria" list="listaCategoriasExistentes"
+               placeholder="Categoria (ej: Movilidad)" required>
+        <datalist id="listaCategoriasExistentes"></datalist>
+        <input type="text" id="inputPalabra" placeholder="Palabra a buscar (ej: ciclovia Bogota)" required>
+        <button type="submit" class="btn btn-primario btn-chico">Agregar palabra</button>
+      </form>
+
+      <p id="palabrasError" class="error oculto"></p>
+    </section>
+
+    <!-- Estado: se muestra mientras esta buscando, o si hubo un error -->
+    <section id="estado" class="estado oculto">
+      <div class="spinner"></div>
+      <p id="estadoTexto">Buscando noticias... esto puede tardar 1-2 minutos.</p>
+    </section>
+
+    <section id="error" class="error oculto"></section>
+
+    <!-- Resumen de la ultima busqueda realizada, como tarjetas de datos -->
+    <section id="resumen" class="stats oculto">
+      <div class="stat-card">
+        <span class="stat-label">Franja aplicada</span>
+        <span class="stat-value stat-texto" id="resVentana">-</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Rango horario</span>
+        <span class="stat-value stat-texto" id="resRango">-</span>
+      </div>
+      <div class="stat-card stat-acento">
+        <span class="stat-label">Noticias Bogota</span>
+        <span class="stat-value" id="resTotalBogota">0</span>
+      </div>
+      <div class="stat-card stat-acento">
+        <span class="stat-label">Noticias nacionales</span>
+        <span class="stat-value" id="resTotalNacional">0</span>
+      </div>
+    </section>
+
+    <!-- Resultados: nacional primero (son solo 3), luego Bogota -->
+    <section id="seccionNacional" class="panel oculto">
+      <h2>Noticias Nacionales (Top 3)</h2>
+      <div class="tabla-wrap">
+        <table id="tablaNacional">
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th>Fuente</th>
+              <th>Titulo</th>
+              <th>Resumen</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="seccionBogota" class="panel oculto">
+      <h2>Noticias de Bogota</h2>
+      <div class="tabla-wrap">
+        <table id="tablaBogota">
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th>Fuente</th>
+              <th>Titulo</th>
+              <th>Resumen</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js') }}?v={{ version_de('app.js') }}"></script>
+</body>
+</html>

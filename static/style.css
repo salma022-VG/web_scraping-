@@ -1,0 +1,591 @@
+/* ==========================================================================
+   Paleta de colores. Definida como variables para poder tener modo claro
+   y modo oscuro sin repetir estilos (el navegador elige uno u otro segun
+   la configuracion del sistema operativo del usuario).
+   ========================================================================== */
+:root {
+  --azul: #2563eb;
+  --azul-oscuro: #1d4ed8;
+  --azul-suave: #eff6ff;
+
+  --texto: #1f2937;
+  --texto-suave: #6b7280;
+  --borde: #e5e7eb;
+  --fondo: #f5f6f8;
+  --panel: #ffffff;
+  --panel-hover: #fafbfc;
+  --encabezado-tabla: #f3f4f6;
+
+  --rojo: #b91c1c;
+  --rojo-fondo: #fee2e2;
+  --rojo-borde: #fecaca;
+
+  --sombra: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --sombra-hover: 0 4px 10px rgba(16, 24, 40, 0.08);
+
+  /* Colores de los "badges" de categoria (se reparten automaticamente
+     segun el nombre de cada categoria, ver static/app.js) */
+  --badge-1-bg: #fef3c7; --badge-1-fg: #92400e;
+  --badge-2-bg: #ede9fe; --badge-2-fg: #5b21b6;
+  --badge-3-bg: #d1fae5; --badge-3-fg: #065f46;
+  --badge-4-bg: #dbeafe; --badge-4-fg: #1e40af;
+  --badge-5-bg: #ccfbf1; --badge-5-fg: #0f766e;
+  --badge-6-bg: #e0e7ff; --badge-6-fg: #3730a3;
+  --badge-7-bg: #fce7f3; --badge-7-fg: #9d174d;
+  --badge-8-bg: #f3f4f6; --badge-8-fg: #374151;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --azul: #3b82f6;
+    --azul-oscuro: #60a5fa;
+    --azul-suave: #0f1d33;
+
+    --texto: #e5e7eb;
+    --texto-suave: #9ca3af;
+    --borde: #2a2f3a;
+    --fondo: #14161c;
+    --panel: #1b1e26;
+    --panel-hover: #20242e;
+    --encabezado-tabla: #20242e;
+
+    --rojo: #f87171;
+    --rojo-fondo: #3b1414;
+    --rojo-borde: #5c1f1f;
+
+    --sombra: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --sombra-hover: 0 4px 14px rgba(0, 0, 0, 0.45);
+
+    --badge-1-bg: #3a2f13; --badge-1-fg: #fbbf24;
+    --badge-2-bg: #2c2350; --badge-2-fg: #c4b5fd;
+    --badge-3-bg: #103328; --badge-3-fg: #6ee7b7;
+    --badge-4-bg: #17264a; --badge-4-fg: #93c5fd;
+    --badge-5-bg: #0d2f2b; --badge-5-fg: #5eead4;
+    --badge-6-bg: #24245a; --badge-6-fg: #a5b4fc;
+    --badge-7-bg: #3a1330; --badge-7-fg: #f9a8d4;
+    --badge-8-bg: #262a33; --badge-8-fg: #d1d5db;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+/* ---------- Encabezado ---------- */
+
+.topbar {
+  background: var(--panel);
+  border-bottom: 1px solid var(--borde);
+  padding: 22px 28px;
+  position: relative;
+}
+
+.topbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--azul), #8b5cf6 60%, #ec4899);
+}
+
+.topbar h1 {
+  margin: 0 0 4px 0;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.subtitulo {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 13.5px;
+}
+
+/* ---------- Layout general ---------- */
+
+.contenedor {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 18px 22px;
+  box-shadow: var(--sombra);
+}
+
+/* ---------- Controles ---------- */
+
+.controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.campo select {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--borde);
+  background: var(--panel);
+  color: var(--texto);
+  font-size: 14px;
+  min-width: 260px;
+}
+
+.campo select:focus {
+  outline: 2px solid var(--azul);
+  outline-offset: 1px;
+}
+
+.botones {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-primario {
+  background: var(--azul);
+  color: white;
+  box-shadow: var(--sombra);
+}
+
+.btn-primario:hover:not(:disabled) {
+  background: var(--azul-oscuro);
+  box-shadow: var(--sombra-hover);
+}
+
+.btn-secundario {
+  background: transparent;
+  color: var(--azul-oscuro);
+  border: 1px solid var(--azul);
+}
+
+.btn-secundario:hover:not(:disabled) {
+  background: var(--azul-suave);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ---------- Estado (cargando) y error ---------- */
+
+.estado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--azul-suave);
+  border: 1px solid var(--azul);
+  border-radius: 10px;
+  color: var(--azul-oscuro);
+  font-size: 14px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(37, 99, 235, 0.25);
+  border-top-color: var(--azul);
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+.error {
+  padding: 14px 18px;
+  background: var(--rojo-fondo);
+  border: 1px solid var(--rojo-borde);
+  border-radius: 10px;
+  color: var(--rojo);
+  font-size: 14px;
+}
+
+/* ---------- Tarjetas de resumen (stats) ---------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: var(--sombra);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-card.stat-acento {
+  background: var(--azul-suave);
+  border-color: var(--azul);
+}
+
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.stat-card.stat-acento .stat-value {
+  color: var(--azul-oscuro);
+}
+
+.stat-value.stat-texto {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---------- Secciones de resultados ---------- */
+
+.panel h2 {
+  margin: 0 0 14px 0;
+  font-size: 16.5px;
+}
+
+/* ---------- Panel de palabras clave ---------- */
+
+.ayuda-texto {
+  margin: 0 0 16px 0;
+  font-size: 13px;
+  color: var(--texto-suave);
+  line-height: 1.5;
+}
+
+.categorias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.categoria-card {
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: var(--panel-hover);
+}
+
+.categoria-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  padding: 4px 6px 4px 10px;
+  font-size: 12.5px;
+}
+
+.chip button {
+  border: none;
+  background: var(--rojo-fondo);
+  color: var(--rojo);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.chip button:hover {
+  opacity: 0.8;
+}
+
+.form-agregar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.form-agregar input {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--borde);
+  background: var(--panel);
+  color: var(--texto);
+  font-size: 13.5px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.form-agregar input:focus {
+  outline: 2px solid var(--azul);
+  outline-offset: 1px;
+}
+
+.btn-chico {
+  padding: 9px 16px;
+  font-size: 13px;
+}
+
+.tabla-wrap {
+  overflow: auto;
+  max-height: 560px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--encabezado-tabla);
+  color: var(--texto-suave);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--borde);
+}
+
+tbody td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--borde);
+  vertical-align: top;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: var(--panel-hover);
+}
+
+td.col-fuente {
+  white-space: nowrap;
+  color: var(--texto-suave);
+}
+
+td.col-fecha {
+  white-space: nowrap;
+  color: var(--texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+td.col-titulo a {
+  color: var(--azul-oscuro);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+td.col-titulo a:hover {
+  text-decoration: underline;
+}
+
+td.col-resumen {
+  color: var(--texto);
+  max-width: 480px;
+  line-height: 1.45;
+}
+
+/* ---------- Badges de categoria ---------- */
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge-1 { background: var(--badge-1-bg); color: var(--badge-1-fg); }
+.badge-2 { background: var(--badge-2-bg); color: var(--badge-2-fg); }
+.badge-3 { background: var(--badge-3-bg); color: var(--badge-3-fg); }
+.badge-4 { background: var(--badge-4-bg); color: var(--badge-4-fg); }
+.badge-5 { background: var(--badge-5-bg); color: var(--badge-5-fg); }
+.badge-6 { background: var(--badge-6-bg); color: var(--badge-6-fg); }
+.badge-7 { background: var(--badge-7-bg); color: var(--badge-7-fg); }
+.badge-8 { background: var(--badge-8-bg); color: var(--badge-8-fg); }
+
+/* ---------- Utilidades ---------- */
+
+.oculto {
+  display: none !important;
+}
+
+.vacio {
+  color: var(--texto-suave);
+  font-size: 13px;
+  padding: 10px 4px;
+}
+
+/* ---------- Responsivo (celular / pantallas angostas) ---------- */
+
+@media (max-width: 720px) {
+  .topbar { padding: 16px 16px; }
+  .topbar h1 { font-size: 19px; }
+  .subtitulo { font-size: 12.5px; }
+
+  .contenedor { padding: 14px 10px 40px; gap: 14px; }
+  .panel { padding: 14px 16px; border-radius: 10px; }
+
+  /* Los controles (selector de franja + botones) pasan de estar en una
+     sola fila a apilarse, y los botones ocupan todo el ancho para que
+     sean faciles de tocar con el dedo. */
+  .controles { flex-direction: column; align-items: stretch; gap: 12px; }
+  .campo select { min-width: 0; width: 100%; }
+  .botones { width: 100%; }
+  .btn { flex: 1; padding: 12px 16px; }
+
+  .stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-value { font-size: 20px; }
+
+  /* --------------------------------------------------------------
+     LA TABLA SE CONVIERTE EN "TARJETAS".
+     En una pantalla angosta, una tabla con 5 columnas obliga a hacer
+     scroll horizontal, que es incomodo en celular. Aqui se cambia el
+     dibujo por completo: cada FILA (tr) se convierte en una tarjeta, y
+     cada CELDA (td) se convierte en una linea dentro de esa tarjeta,
+     con una etiqueta chiquita al lado (el "Categoria:", "Fuente:", etc,
+     que sale del atributo data-label que se agrega en static/app.js).
+     -------------------------------------------------------------- */
+  .tabla-wrap {
+    max-height: none;
+    border: none;
+    overflow: visible;
+  }
+
+  table, thead, tbody, tr, td {
+    display: block;
+    width: 100%;
+  }
+
+  thead {
+    /* El encabezado (Categoria / Fuente / Titulo / ...) ya no hace
+       falta: cada celda va a mostrar su propia etiqueta al lado. */
+    position: absolute;
+    left: -9999px;
+  }
+
+  tbody tr {
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    box-shadow: var(--sombra);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  tbody tr:last-child {
+    margin-bottom: 0;
+  }
+
+  tbody td {
+    border-bottom: none;
+    padding: 6px 0;
+    max-width: none;
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+  }
+
+  td[data-label]::before {
+    content: attr(data-label) ":";
+    flex-shrink: 0;
+    width: 74px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--texto-suave);
+  }
+
+  td.col-titulo::before {
+    /* El titulo ya se distingue solo por ser el texto en azul y en
+       negrita, asi que no necesita etiqueta repitiendo "Titulo". */
+    content: "";
+    width: 0;
+  }
+
+  .vacio {
+    padding: 4px 0;
+  }
+}

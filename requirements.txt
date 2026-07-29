@@ -1,0 +1,10 @@
+feedparser
+pandas
+openpyxl
+requests
+python-dateutil
+tzdata
+beautifulsoup4
+googlenewsdecoder
+flask
+gunicorn
