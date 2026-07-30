@@ -202,24 +202,15 @@ NATIONAL_TOPICS_FEED = (
 )
 
 
-def ensure_keywords_file(path: str) -> None:
+def guardar_palabras_clave_excel(df: pd.DataFrame, path: str) -> None:
     """
-    Si el archivo de palabras clave (Palabras_Clave_Bogota.xlsx) todavia no
-    existe en la carpeta, lo crea con la lista inicial (DEFAULT_BOGOTA_QUERIES),
-    ya con formato de tabla legible (encabezado en negrita, columnas anchas).
-    Asi, la primera vez que alguien use el programa en una computadora
-    nueva, no hace falta crear el Excel a mano.
+    Guarda la tabla de palabras clave en el Excel, siempre con el mismo
+    formato legible (encabezado en negrita, columnas anchas, fila de
+    encabezado fija al desplazarse). Se usa tanto para crear el archivo la
+    primera vez como para guardarlo de nuevo cada vez que alguien agrega o
+    quita una palabra desde la pagina web, para que nunca pierda el
+    formato ni quede distinto segun por donde se haya editado.
     """
-    if os.path.exists(path):
-        return  # ya existe, no se toca (para no borrar palabras que alguien ya agrego)
-
-    filas = [
-        {"categoria": categoria, "palabra_clave": palabra}
-        for categoria, palabras in DEFAULT_BOGOTA_QUERIES.items()
-        for palabra in palabras
-    ]
-    df = pd.DataFrame(filas, columns=["categoria", "palabra_clave"])
-
     with pd.ExcelWriter(path, engine="openpyxl") as writer:
         df.to_excel(writer, sheet_name="Palabras clave", index=False)
 
@@ -233,6 +224,24 @@ def ensure_keywords_file(path: str) -> None:
             ws.column_dimensions[col_cells[0].column_letter].width = min(max(length + 2, 15), 60)
         ws.freeze_panes = "A2"
 
+
+def ensure_keywords_file(path: str) -> None:
+    """
+    Si el archivo de palabras clave (Palabras_Clave_Bogota.xlsx) todavia no
+    existe en la carpeta, lo crea con la lista inicial (DEFAULT_BOGOTA_QUERIES).
+    Asi, la primera vez que alguien use el programa en una computadora
+    nueva, no hace falta crear el Excel a mano.
+    """
+    if os.path.exists(path):
+        return  # ya existe, no se toca (para no borrar palabras que alguien ya agrego)
+
+    filas = [
+        {"categoria": categoria, "palabra_clave": palabra}
+        for categoria, palabras in DEFAULT_BOGOTA_QUERIES.items()
+        for palabra in palabras
+    ]
+    df = pd.DataFrame(filas, columns=["categoria", "palabra_clave"])
+    guardar_palabras_clave_excel(df, path)
     print(f"Se creo el archivo de palabras clave: {path}")
 
 

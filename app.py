@@ -260,7 +260,7 @@ def api_agregar_palabra_clave():
     if not ya_existe:
         fila_nueva = pd.DataFrame([{"categoria": categoria, "palabra_clave": palabra}])
         df = pd.concat([df, fila_nueva], ignore_index=True)
-        df.to_excel(motor.KEYWORDS_FILE, index=False)
+        motor.guardar_palabras_clave_excel(df, motor.KEYWORDS_FILE)
 
     queries = motor.load_bogota_queries(motor.KEYWORDS_FILE)
     motor.sync_default_queries_in_code(queries, os.path.abspath(motor.__file__))
@@ -281,7 +281,7 @@ def api_borrar_palabra_clave():
             & (df["palabra_clave"].astype(str).str.strip().str.lower() == palabra.lower())
         )
         df = df[se_debe_conservar]
-        df.to_excel(motor.KEYWORDS_FILE, index=False)
+        motor.guardar_palabras_clave_excel(df, motor.KEYWORDS_FILE)
 
     queries = motor.load_bogota_queries(motor.KEYWORDS_FILE)
     motor.sync_default_queries_in_code(queries, os.path.abspath(motor.__file__))
