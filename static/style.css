@@ -4,9 +4,22 @@
    la configuracion del sistema operativo del usuario).
    ========================================================================== */
 :root {
-  --azul: #2563eb;
-  --azul-oscuro: #1d4ed8;
-  --azul-suave: #eff6ff;
+  /* --- Paleta de marca --- */
+  --amarillo: #F2C230;
+  --amarillo-claro: #F6D58A;
+  --turquesa: #63C0C8;
+  --turquesa-oscuro: #2F8FA3;
+  --turquesa-claro: #A9DDE2;
+  --morado: #9A8FA9;
+  --morado-claro: #C7C3D6;
+  --beige: #E6D3B3;
+
+  /* Color de acento principal (botones, links, bordes activos). Se usa
+     el turquesa oscuro como base, con una version mas oscura para el
+     estado "hover" y una version clara y suave para fondos de acento. */
+  --acento: var(--turquesa-oscuro);
+  --acento-oscuro: #1f6b7a;
+  --acento-suave: color-mix(in srgb, var(--turquesa-claro) 45%, white);
 
   --texto: #1f2937;
   --texto-suave: #6b7280;
@@ -23,23 +36,28 @@
   --sombra: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
   --sombra-hover: 0 4px 10px rgba(16, 24, 40, 0.08);
 
-  /* Colores de los "badges" de categoria (se reparten automaticamente
-     segun el nombre de cada categoria, ver static/app.js) */
-  --badge-1-bg: #fef3c7; --badge-1-fg: #92400e;
-  --badge-2-bg: #ede9fe; --badge-2-fg: #5b21b6;
-  --badge-3-bg: #d1fae5; --badge-3-fg: #065f46;
-  --badge-4-bg: #dbeafe; --badge-4-fg: #1e40af;
-  --badge-5-bg: #ccfbf1; --badge-5-fg: #0f766e;
-  --badge-6-bg: #e0e7ff; --badge-6-fg: #3730a3;
-  --badge-7-bg: #fce7f3; --badge-7-fg: #9d174d;
-  --badge-8-bg: #f3f4f6; --badge-8-fg: #374151;
+  /* Colores de los "badges" de categoria: cada una de las 8 categorias
+     (Hacienda, Movilidad, Catastro, etc.) toma uno de los 8 colores de la
+     paleta de marca. El fondo es una version clara de ese color y el
+     texto una version oscura, calculadas automaticamente con color-mix()
+     para que siempre queden legibles sin tener que elegir cada tono a mano. */
+  --badge-1-bg: color-mix(in srgb, var(--amarillo) 25%, white);        --badge-1-fg: color-mix(in srgb, var(--amarillo) 65%, black);
+  --badge-2-bg: color-mix(in srgb, var(--amarillo-claro) 45%, white);  --badge-2-fg: color-mix(in srgb, var(--amarillo-claro) 75%, black);
+  --badge-3-bg: color-mix(in srgb, var(--turquesa) 25%, white);        --badge-3-fg: color-mix(in srgb, var(--turquesa) 65%, black);
+  --badge-4-bg: color-mix(in srgb, var(--turquesa-oscuro) 20%, white); --badge-4-fg: color-mix(in srgb, var(--turquesa-oscuro) 75%, black);
+  --badge-5-bg: color-mix(in srgb, var(--turquesa-claro) 45%, white);  --badge-5-fg: color-mix(in srgb, var(--turquesa-claro) 80%, black);
+  --badge-6-bg: color-mix(in srgb, var(--morado) 22%, white);         --badge-6-fg: color-mix(in srgb, var(--morado) 70%, black);
+  --badge-7-bg: color-mix(in srgb, var(--morado-claro) 45%, white);   --badge-7-fg: color-mix(in srgb, var(--morado-claro) 80%, black);
+  --badge-8-bg: color-mix(in srgb, var(--beige) 40%, white);          --badge-8-fg: color-mix(in srgb, var(--beige) 75%, black);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --azul: #3b82f6;
-    --azul-oscuro: #60a5fa;
-    --azul-suave: #0f1d33;
+    /* En modo oscuro se usa el turquesa medio (mas brillante) como
+       acento principal, para que resalte bien sobre el fondo oscuro. */
+    --acento: var(--turquesa);
+    --acento-oscuro: var(--turquesa-claro);
+    --acento-suave: color-mix(in srgb, var(--turquesa-oscuro) 30%, black);
 
     --texto: #e5e7eb;
     --texto-suave: #9ca3af;
@@ -56,14 +74,14 @@
     --sombra: 0 1px 2px rgba(0, 0, 0, 0.3);
     --sombra-hover: 0 4px 14px rgba(0, 0, 0, 0.45);
 
-    --badge-1-bg: #3a2f13; --badge-1-fg: #fbbf24;
-    --badge-2-bg: #2c2350; --badge-2-fg: #c4b5fd;
-    --badge-3-bg: #103328; --badge-3-fg: #6ee7b7;
-    --badge-4-bg: #17264a; --badge-4-fg: #93c5fd;
-    --badge-5-bg: #0d2f2b; --badge-5-fg: #5eead4;
-    --badge-6-bg: #24245a; --badge-6-fg: #a5b4fc;
-    --badge-7-bg: #3a1330; --badge-7-fg: #f9a8d4;
-    --badge-8-bg: #262a33; --badge-8-fg: #d1d5db;
+    --badge-1-bg: color-mix(in srgb, var(--amarillo) 28%, black);        --badge-1-fg: color-mix(in srgb, var(--amarillo) 85%, white);
+    --badge-2-bg: color-mix(in srgb, var(--amarillo-claro) 22%, black);  --badge-2-fg: color-mix(in srgb, var(--amarillo-claro) 90%, white);
+    --badge-3-bg: color-mix(in srgb, var(--turquesa) 28%, black);        --badge-3-fg: color-mix(in srgb, var(--turquesa) 85%, white);
+    --badge-4-bg: color-mix(in srgb, var(--turquesa-oscuro) 35%, black); --badge-4-fg: color-mix(in srgb, var(--turquesa-oscuro) 90%, white);
+    --badge-5-bg: color-mix(in srgb, var(--turquesa-claro) 20%, black);  --badge-5-fg: color-mix(in srgb, var(--turquesa-claro) 90%, white);
+    --badge-6-bg: color-mix(in srgb, var(--morado) 28%, black);         --badge-6-fg: color-mix(in srgb, var(--morado) 88%, white);
+    --badge-7-bg: color-mix(in srgb, var(--morado-claro) 22%, black);   --badge-7-fg: color-mix(in srgb, var(--morado-claro) 90%, white);
+    --badge-8-bg: color-mix(in srgb, var(--beige) 22%, black);          --badge-8-fg: color-mix(in srgb, var(--beige) 88%, white);
   }
 }
 
@@ -92,7 +110,7 @@ body {
   right: 0;
   bottom: -1px;
   height: 3px;
-  background: linear-gradient(90deg, var(--azul), #8b5cf6 60%, #ec4899);
+  background: linear-gradient(90deg, var(--amarillo), var(--turquesa) 50%, var(--morado) 100%);
 }
 
 .topbar h1 {
@@ -161,7 +179,7 @@ body {
 }
 
 .campo select:focus {
-  outline: 2px solid var(--azul);
+  outline: 2px solid var(--acento);
   outline-offset: 1px;
 }
 
@@ -185,24 +203,24 @@ body {
 }
 
 .btn-primario {
-  background: var(--azul);
+  background: var(--acento);
   color: white;
   box-shadow: var(--sombra);
 }
 
 .btn-primario:hover:not(:disabled) {
-  background: var(--azul-oscuro);
+  background: var(--acento-oscuro);
   box-shadow: var(--sombra-hover);
 }
 
 .btn-secundario {
   background: transparent;
-  color: var(--azul-oscuro);
-  border: 1px solid var(--azul);
+  color: var(--acento-oscuro);
+  border: 1px solid var(--acento);
 }
 
 .btn-secundario:hover:not(:disabled) {
-  background: var(--azul-suave);
+  background: var(--acento-suave);
 }
 
 .btn:disabled {
@@ -218,18 +236,18 @@ body {
   align-items: center;
   gap: 12px;
   padding: 14px 18px;
-  background: var(--azul-suave);
-  border: 1px solid var(--azul);
+  background: var(--acento-suave);
+  border: 1px solid var(--acento);
   border-radius: 10px;
-  color: var(--azul-oscuro);
+  color: var(--acento-oscuro);
   font-size: 14px;
 }
 
 .spinner {
   width: 18px;
   height: 18px;
-  border: 3px solid rgba(37, 99, 235, 0.25);
-  border-top-color: var(--azul);
+  border: 3px solid color-mix(in srgb, var(--acento) 25%, transparent);
+  border-top-color: var(--acento);
   border-radius: 50%;
   animation: girar 0.8s linear infinite;
   flex-shrink: 0;
@@ -268,8 +286,8 @@ body {
 }
 
 .stat-card.stat-acento {
-  background: var(--azul-suave);
-  border-color: var(--azul);
+  background: var(--acento-suave);
+  border-color: var(--acento);
 }
 
 .stat-label {
@@ -287,7 +305,7 @@ body {
 }
 
 .stat-card.stat-acento .stat-value {
-  color: var(--azul-oscuro);
+  color: var(--acento-oscuro);
 }
 
 .stat-value.stat-texto {
@@ -386,7 +404,7 @@ body {
 }
 
 .form-agregar input:focus {
-  outline: 2px solid var(--azul);
+  outline: 2px solid var(--acento);
   outline-offset: 1px;
 }
 
@@ -450,7 +468,7 @@ td.col-fecha {
 }
 
 td.col-titulo a {
-  color: var(--azul-oscuro);
+  color: var(--acento-oscuro);
   text-decoration: none;
   font-weight: 600;
 }
