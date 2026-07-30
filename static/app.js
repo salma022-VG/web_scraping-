@@ -101,7 +101,20 @@ async function buscarNoticias() {
       body: JSON.stringify({ window_hours: horas || null }),
     });
 
-    const datos = await respuesta.json();
+    // Si la busqueda tardo demasiado, el servidor puede cortar la
+    // conexion a mitad de camino y la respuesta llega vacia (no es un
+    // JSON valido). Eso no significa que el navegador este roto: hay que
+    // avisarle al usuario que lo intente de nuevo, no mostrar el error
+    // tecnico crudo.
+    let datos;
+    try {
+      datos = await respuesta.json();
+    } catch {
+      throw new Error(
+        "La busqueda tardo demasiado y el servidor corto la conexion. " +
+        "Intenta de nuevo, o elige una franja mas corta (por ejemplo, 6 horas)."
+      );
+    }
 
     if (!respuesta.ok) {
       throw new Error(datos.error || "Ocurrio un error al buscar las noticias.");
