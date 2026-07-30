@@ -99,8 +99,13 @@ body {
 .topbar {
   background: var(--panel);
   border-bottom: 1px solid var(--borde);
-  padding: 22px 28px;
+  padding: 18px 28px;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .topbar::after {
@@ -113,10 +118,28 @@ body {
   background: linear-gradient(90deg, var(--amarillo), var(--turquesa) 50%, var(--morado) 100%);
 }
 
+.topbar-texto {
+  min-width: 0; /* para que el texto se pueda achicar/ajustar si hace falta */
+}
+
 .topbar h1 {
   margin: 0 0 4px 0;
   font-size: 22px;
   letter-spacing: -0.01em;
+}
+
+.topbar-logo {
+  height: 42px;
+  width: auto;
+  flex-shrink: 0;
+  /* El logo institucional tiene su propio fondo blanco y colores fijos
+     (escudo, texto rojo de "Bogota"), asi que se deja tal cual, sin
+     aplicarle ningun filtro de color -- funciona igual en modo claro y
+     modo oscuro porque queda sobre una tarjeta blanca propia. */
+  background: white;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--borde);
 }
 
 .subtitulo {
@@ -521,6 +544,7 @@ td.col-resumen {
   .topbar { padding: 16px 16px; }
   .topbar h1 { font-size: 19px; }
   .subtitulo { font-size: 12.5px; }
+  .topbar-logo { height: 32px; }
 
   .contenedor { padding: 14px 10px 40px; gap: 14px; }
   .panel { padding: 14px 16px; border-radius: 10px; }

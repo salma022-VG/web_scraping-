@@ -9,8 +9,15 @@
 <body>
 
   <header class="topbar">
-    <h1>Monitoreo de Noticias</h1>
-    <p class="subtitulo">Bogota (Hacienda, Infraestructura, Vivienda, Movilidad, Inmobiliario, Alcaldia, Catastro) + Top 3 Nacional</p>
+    <div class="topbar-texto">
+      <h1>Monitoreo de Noticias</h1>
+      <p class="subtitulo">Bogota (Hacienda, Infraestructura, Vivienda, Movilidad, Inmobiliario, Alcaldia, Catastro) + Top 3 Nacional</p>
+    </div>
+    <img
+      class="topbar-logo"
+      src="{{ url_for('static', filename='img/logo-catastro-bogota.png') }}?v={{ version_de('img/logo-catastro-bogota.png') }}"
+      alt="Alcaldia Mayor de Bogota - UAECD Catastro Bogota - Bogota"
+    >
   </header>
 
   <main class="contenedor">
