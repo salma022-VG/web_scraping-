@@ -595,7 +595,15 @@ def _fetch_summary(url: str, timeout: int) -> str:
     try:
         resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=timeout)
         resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
+        # Se le pasan los bytes crudos (resp.content) a BeautifulSoup, no el
+        # texto ya decodificado (resp.text). Muchas paginas no declaran bien
+        # su codificacion de caracteres en la respuesta, y "requests" a veces
+        # adivina mal (asume Latin-1 en vez de UTF-8), lo que hace que las
+        # tildes y enies salgan mal ("jurÃdica" en vez de "jurídica").
+        # BeautifulSoup detecta la codificacion real revisando el propio
+        # contenido de la pagina (incluyendo la etiqueta <meta charset>), lo
+        # cual es mucho mas confiable.
+        soup = BeautifulSoup(resp.content, "html.parser")
         tag = soup.find("meta", attrs={"name": "description"}) or soup.find(
             "meta", attrs={"property": "og:description"}
         )
