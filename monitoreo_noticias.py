@@ -675,21 +675,29 @@ def collect_bogota_news(start: datetime, end: datetime, queries_por_categoria: d
     return unique_items
 
 
-def collect_national_news(top_n: int = 3) -> list[NewsItem]:
+def collect_national_news(start: datetime, end: datetime, top_n: int = 3) -> list[NewsItem]:
     """
-    Trae las noticias nacionales de Colombia mas destacadas de HOY (segun
-    el orden en que Google Noticias las muestra, que ya viene ordenado por
-    importancia), y se queda solo con las primeras "top_n" (por defecto 3).
+    Trae las noticias nacionales de Colombia mas destacadas (segun el
+    orden en que Google Noticias las muestra, que ya viene ordenado por
+    importancia) dentro de la MISMA franja horaria que se uso para
+    Bogota, y se queda solo con las primeras "top_n" (por defecto 3).
+
+    Usar la misma franja que Bogota (en vez de "solo desde la medianoche
+    de hoy") evita que la seccion nacional quede vacia cuando el programa
+    se corre muy temprano en la manana, ya que la franja de la manana
+    empieza desde la noche anterior.
     """
-    today = datetime.now(BOGOTA_TZ).date()
     feed = fetch_feed(NATIONAL_TOPICS_FEED)
-    items = parse_entries(
-        feed,
-        "Nacional Colombia",
-        start=datetime.combine(today, datetime.min.time(), tzinfo=BOGOTA_TZ),
-        end=datetime.now(BOGOTA_TZ),
-    )
-    items = dedupe(items)
+    items = dedupe(parse_entries(feed, "Nacional Colombia", start=start, end=end))
+
+    if not items:
+        # Respaldo: si aun asi no aparecio nada dentro de la franja (poco
+        # comun), se amplia la busqueda a los ultimos 3 dias para no dejar
+        # la seccion nacional completamente vacia.
+        respaldo_inicio = end - timedelta(days=3)
+        items = dedupe(parse_entries(feed, "Nacional Colombia", start=respaldo_inicio, end=end))
+
+    items.sort(key=lambda it: it.fecha, reverse=True)
     return items[:top_n]
 
 
@@ -864,7 +872,7 @@ def main():
 
     # Paso 3: buscar las noticias (Bogota y luego nacionales).
     bogota_items = collect_bogota_news(start, end, queries_por_categoria)
-    national_items = collect_national_news(top_n=3)
+    national_items = collect_national_news(start, end, top_n=3)
 
     # Paso 4: para cada noticia encontrada, buscar su link real y su resumen.
     enrich_items(bogota_items + national_items)

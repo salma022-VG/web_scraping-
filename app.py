@@ -122,7 +122,7 @@ def _ejecutar_busqueda_en_segundo_plano(job_id: str, force_hours: float | None) 
         motor.sync_default_queries_in_code(queries, os.path.abspath(motor.__file__))
 
         bogota_items = motor.collect_bogota_news(start, end, queries)
-        national_items = motor.collect_national_news(top_n=3)
+        national_items = motor.collect_national_news(start, end, top_n=3)
         motor.enrich_items(bogota_items + national_items)
 
         ultima_busqueda.update(
