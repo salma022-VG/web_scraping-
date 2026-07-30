@@ -555,15 +555,20 @@ def _resolve_real_link(google_link: str, timeout: int) -> str:
     """
     Convierte el link "envuelto" de Google Noticias en el link real de la
     pagina del periodico. Si por algun motivo no se puede destapar (por
-    ejemplo, por un problema de conexion), se deja el link original de
-    Google Noticias como respaldo, para que la noticia nunca quede sin link.
+    ejemplo, por un problema de conexion, o porque Google bloquea las
+    peticiones que vienen de un servidor en la nube), se deja el link
+    original de Google Noticias como respaldo, para que la noticia nunca
+    quede sin link -- ver "_link_excel_seguro" en export_to_excel, que se
+    encarga de que ese link de respaldo (que puede ser muy largo) nunca
+    rompa el Excel.
     """
     try:
         result = gnewsdecoder(google_link, interval=1)
         if result and result.get("status") and result.get("decoded_url"):
             return result["decoded_url"]
-    except Exception:
-        pass
+        print(f"  [aviso] no se pudo resolver el link real (sin decoded_url): {result}", file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001
+        print(f"  [aviso] no se pudo resolver el link real ({type(exc).__name__}: {exc})", file=sys.stderr)
     return google_link
 
 
@@ -769,6 +774,17 @@ def export_to_excel(bogota_items: list[NewsItem], national_items: list[NewsItem]
 
         from openpyxl.styles import Font
 
+        # Excel solo admite hipervinculos de hasta 255 caracteres: si el
+        # link es mas largo que eso, Excel lo guarda igual como texto en la
+        # celda, pero al hacerle clic da error ("no se puede abrir el
+        # archivo especificado"). Esto pasa con los links de respaldo de
+        # Google Noticias cuando no se pudo destapar el link real (son
+        # larguisimos). Por eso solo se activa como link clickeable cuando
+        # es corto; si es largo, se deja como texto plano -- se puede
+        # copiar y pegar en el navegador igual, solo que no es clickeable
+        # directamente desde Excel.
+        LARGO_MAXIMO_HIPERVINCULO = 255
+
         # Para las hojas de noticias: se convierte la columna "enlace" en un
         # link real de Excel (azul y subrayado, se puede hacer clic), y se
         # ajusta el ancho de cada columna segun el largo del texto que tiene.
@@ -778,7 +794,7 @@ def export_to_excel(bogota_items: list[NewsItem], national_items: list[NewsItem]
                 link_col = df.columns.get_loc("enlace") + 1
                 for row_idx in range(2, len(df) + 2):  # la fila 1 es el encabezado, por eso se empieza en la 2
                     cell = ws.cell(row=row_idx, column=link_col)
-                    if cell.value:
+                    if cell.value and len(str(cell.value)) <= LARGO_MAXIMO_HIPERVINCULO:
                         cell.hyperlink = cell.value
                         cell.font = Font(color="0563C1", underline="single")
             for col_cells in ws.columns:
