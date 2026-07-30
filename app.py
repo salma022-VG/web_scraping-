@@ -160,6 +160,7 @@ def _serializar(items: list) -> list[dict]:
             "fuente": it.medio,
             "titulo": it.titular,
             "resumen": it.resumen,
+            "tono": it.tono,
             "fecha": it.fecha.strftime("%Y-%m-%d %H:%M"),
             "enlace": it.enlace or it.link,
         }

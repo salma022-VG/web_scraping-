@@ -33,6 +33,11 @@
   --rojo-fondo: #fee2e2;
   --rojo-borde: #fecaca;
 
+  /* Verde para el tono "Positiva" de las noticias (el rojo de arriba se
+     reutiliza para "Negativa", y los grises neutros para "Neutra"). */
+  --verde: #15803d;
+  --verde-fondo: #dcfce7;
+
   --sombra: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
   --sombra-hover: 0 4px 10px rgba(16, 24, 40, 0.08);
 
@@ -70,6 +75,9 @@
     --rojo: #f87171;
     --rojo-fondo: #3b1414;
     --rojo-borde: #5c1f1f;
+
+    --verde: #4ade80;
+    --verde-fondo: #123822;
 
     --sombra: 0 1px 2px rgba(0, 0, 0, 0.3);
     --sombra-hover: 0 4px 14px rgba(0, 0, 0, 0.45);
@@ -525,6 +533,12 @@ td.col-resumen {
 .badge-6 { background: var(--badge-6-bg); color: var(--badge-6-fg); }
 .badge-7 { background: var(--badge-7-bg); color: var(--badge-7-fg); }
 .badge-8 { background: var(--badge-8-bg); color: var(--badge-8-fg); }
+
+/* El tono usa colores fijos con significado universal, no los colores
+   repartidos por categoria. */
+.badge-tono-positiva { background: var(--verde-fondo); color: var(--verde); }
+.badge-tono-negativa { background: var(--rojo-fondo); color: var(--rojo); }
+.badge-tono-neutra { background: var(--encabezado-tabla); color: var(--texto-suave); }
 
 /* ---------- Utilidades ---------- */
 

@@ -52,6 +52,15 @@ function colorParaCategoria(categoria) {
   return COLORES_BADGE[hash % COLORES_BADGE.length];
 }
 
+// El tono (Positiva/Negativa/Neutra) usa colores fijos y con significado
+// universal (verde = positiva, rojo = negativa, gris = neutra), a
+// diferencia de las categorias que usan colores repartidos por hash.
+const CLASE_BADGE_TONO = {
+  Positiva: "badge-tono-positiva",
+  Negativa: "badge-tono-negativa",
+  Neutra: "badge-tono-neutra",
+};
+
 function llenarTabla(tablaId, noticias) {
   const tabla = document.getElementById(tablaId);
   const cuerpo = tabla.querySelector("tbody");
@@ -59,7 +68,7 @@ function llenarTabla(tablaId, noticias) {
 
   if (!noticias || noticias.length === 0) {
     const fila = document.createElement("tr");
-    fila.innerHTML = `<td colspan="5" class="vacio">No se encontraron noticias en esta franja.</td>`;
+    fila.innerHTML = `<td colspan="6" class="vacio">No se encontraron noticias en esta franja.</td>`;
     cuerpo.appendChild(fila);
     return;
   }
@@ -67,6 +76,7 @@ function llenarTabla(tablaId, noticias) {
   for (const noticia of noticias) {
     const fila = document.createElement("tr");
     const colorBadge = colorParaCategoria(noticia.categoria || "");
+    const claseTono = CLASE_BADGE_TONO[noticia.tono] || "badge-tono-neutra";
     // El atributo "data-label" no se ve en pantallas grandes (ahi se ve la
     // tabla normal, con encabezados arriba). En celular, la tabla cambia a
     // formato de "tarjetas" (ver static/style.css) y ahi si se usa este
@@ -76,6 +86,7 @@ function llenarTabla(tablaId, noticias) {
       <td class="col-fuente" data-label="Fuente">${escaparTexto(noticia.fuente)}</td>
       <td class="col-titulo" data-label="Titulo"><a href="${escaparTexto(noticia.enlace)}" target="_blank" rel="noopener">${escaparTexto(noticia.titulo)}</a></td>
       <td class="col-resumen" data-label="Resumen">${escaparTexto(noticia.resumen)}</td>
+      <td class="col-tono" data-label="Tono"><span class="badge ${claseTono}">${escaparTexto(noticia.tono)}</span></td>
       <td class="col-fecha" data-label="Fecha">${escaparTexto(noticia.fecha)}</td>
     `;
     cuerpo.appendChild(fila);

@@ -422,6 +422,7 @@ class NewsItem:
     link: str
     enlace: str = ""   # se llena despues, con el link real del periodico
     resumen: str = ""  # se llena despues, con un pequeno resumen de la noticia
+    tono: str = ""     # se llena despues: "Positiva", "Negativa" o "Neutra"
 
 
 def _clean_title(raw_title: str) -> tuple[str, str]:
@@ -614,12 +615,90 @@ def _fetch_summary(url: str, timeout: int) -> str:
     return ""
 
 
+# ---------------------------------------------------------------------------
+# 3c. TONO DE LA NOTICIA: Positiva / Negativa / Neutra
+# ---------------------------------------------------------------------------
+# Esto NO es inteligencia artificial ni nada parecido: es un metodo simple
+# y rapido llamado "analisis de sentimiento por diccionario". Se cuentan
+# cuantas palabras "positivas" y cuantas "negativas" (de las listas de
+# abajo) aparecen en el titulo + resumen de la noticia, y la que tenga mas
+# apariciones define el tono. Es el mismo metodo que usan muchas
+# herramientas de monitoreo de medios, porque es gratis y no necesita
+# instalar modelos pesados de inteligencia artificial (que no funcionarian
+# bien en un servidor gratuito con poca memoria como el que usamos en Render).
+#
+# No es perfecto (por ejemplo, no entiende sarcasmo ni negaciones como "no
+# hubo problemas"), pero da una idea rapida y util del tono general.
+
+PALABRAS_NEGATIVAS = {
+    "muerte", "muerto", "muertos", "murio", "muere", "mueren", "asesinato",
+    "asesinado", "asesinada", "asesinan", "herido", "heridos", "herida",
+    "accidente", "accidentes", "choque", "choca", "atropella", "atropello",
+    "crisis", "corrupcion", "corrupto", "corrupta", "escandalo", "fraude",
+    "robo", "roban", "hurto", "hurtan", "violencia", "violento", "ataque",
+    "atacan", "atentado", "incendio", "derrumbe", "colapso", "colapsa",
+    "emergencia", "protesta", "protestan", "paro", "bloqueo", "bloquean",
+    "denuncia", "denuncian", "sancion", "sancionan", "multa", "multan",
+    "cierre", "cierran", "suspension", "suspenden", "atraso", "retraso",
+    "retrasa", "deficiente", "falla", "fallas", "error", "errores",
+    "problema", "problemas", "conflicto", "disputa", "controversia",
+    "critica", "criticas", "critican", "rechaza", "rechazan", "rechazo",
+    "deuda", "quiebra", "despido", "despiden", "desalojo", "desalojan",
+    "ilegal", "irregularidad", "irregularidades", "hackeo", "ciberataque",
+    "amenaza", "amenazan", "riesgo", "riesgos", "alerta", "alarma",
+    "panico", "tragedia", "desastre", "damnificados", "victima", "victimas",
+    "capturado", "capturan", "arresto", "detenido", "detienen", "carcel",
+    "condena", "condenan", "pena", "homicidio", "feminicidio", "secuestro",
+    "extorsion", "desplazamiento", "contaminacion", "epidemia", "huelga",
+    "escasez", "inseguridad", "delincuencia", "hurtos", "vandalismo",
+    "caos", "trancon", "trancones", "gravisimo", "grave", "polemica",
+}
+
+PALABRAS_POSITIVAS = {
+    "logro", "logros", "logra", "logran", "avance", "avanza", "mejora",
+    "mejoras", "mejoran", "acuerdo", "beneficio", "beneficios", "beneficia",
+    "inversion", "inauguran", "inauguracion", "entrega", "entregan",
+    "moderniza", "modernizacion", "exito", "exitoso", "exitosa", "celebra",
+    "celebracion", "premio", "premian", "reconocimiento", "aprueba",
+    "aprobacion", "aprobado", "aprobada", "impulsa", "impulso", "crecimiento",
+    "crece", "recupera", "recuperacion", "solucion", "resuelve", "resuelto",
+    "gratuito", "gratuita", "subsidio", "apoyo", "alianza", "colaboracion",
+    "oportunidad", "oportunidades", "empleo", "empleos", "transparencia",
+    "eficiente", "eficiencia", "calidad", "bienestar", "sostenible",
+    "sostenibilidad", "innovacion", "gana", "gano", "triunfo", "felicita",
+    "felicitacion", "positivo", "positiva", "favorable", "satisfactorio",
+    "satisfactoria", "renovacion", "renueva", "amplia", "ampliacion",
+    "moderno", "moderna", "seguro", "segura", "beneficiados", "gratis",
+    "avanza", "fortalece", "fortalecimiento", "record", "historico",
+    "historica", "celebran", "reconocen", "destaca", "destacan",
+}
+
+
+def clasificar_tono(titulo: str, resumen: str) -> str:
+    """
+    Devuelve "Positiva", "Negativa" o "Neutra" segun cuantas palabras de
+    cada lista aparecen en el titulo + resumen de la noticia.
+    """
+    texto = _normalize(f"{titulo} {resumen}")
+    palabras_del_texto = set(texto.split())
+
+    puntos_negativos = len(palabras_del_texto & PALABRAS_NEGATIVAS)
+    puntos_positivos = len(palabras_del_texto & PALABRAS_POSITIVAS)
+
+    if puntos_negativos > puntos_positivos:
+        return "Negativa"
+    if puntos_positivos > puntos_negativos:
+        return "Positiva"
+    return "Neutra"
+
+
 def enrich_item(item: NewsItem, timeout: int = 10) -> NewsItem:
-    """Procesa UNA noticia: le busca el link real y el resumen."""
+    """Procesa UNA noticia: le busca el link real, el resumen y el tono."""
     item.enlace = _resolve_real_link(item.link, timeout)
     # Si no se encontro un resumen real, se usa el titulo como resumen
     # de respaldo, para que esa columna nunca quede vacia en el Excel.
     item.resumen = _fetch_summary(item.enlace, timeout) or item.titular
+    item.tono = clasificar_tono(item.titular, item.resumen)
     return item
 
 
@@ -723,7 +802,7 @@ def collect_national_news(start: datetime, end: datetime, top_n: int = 3) -> lis
 # ---------------------------------------------------------------------------
 
 # Estas son las columnas que va a tener cada hoja del Excel con noticias.
-COLUMNS = ["categoria", "fuente", "titulo", "resumen", "fecha", "enlace"]
+COLUMNS = ["categoria", "fuente", "titulo", "resumen", "tono", "fecha", "enlace"]
 
 
 def to_dataframe(items: list[NewsItem]) -> pd.DataFrame:
@@ -742,6 +821,7 @@ def to_dataframe(items: list[NewsItem]) -> pd.DataFrame:
                 "fuente": it.medio,
                 "titulo": it.titular,
                 "resumen": it.resumen,
+                "tono": it.tono,
                 "fecha": it.fecha.strftime("%Y-%m-%d %H:%M"),
                 "enlace": it.enlace or it.link,  # si no se pudo resolver el link real, se usa el original
             }
@@ -797,7 +877,15 @@ def export_to_excel(bogota_items: list[NewsItem], national_items: list[NewsItem]
         df_bogota.to_excel(writer, sheet_name="Bogota", index=False)
         df_nacional.to_excel(writer, sheet_name="Nacional (Top 3)", index=False)
 
-        from openpyxl.styles import Font
+        from openpyxl.styles import Font, PatternFill
+
+        # Colores de fondo para la columna "tono" (verde/rojo/gris suaves,
+        # igual de logica que los badges de la pagina web).
+        COLOR_POR_TONO = {
+            "Positiva": PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid"),
+            "Negativa": PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid"),
+            "Neutra": PatternFill(start_color="F3F4F6", end_color="F3F4F6", fill_type="solid"),
+        }
 
         # Excel solo admite hipervinculos de hasta 255 caracteres: si el
         # link es mas largo que eso, Excel lo guarda igual como texto en la
@@ -822,6 +910,13 @@ def export_to_excel(bogota_items: list[NewsItem], national_items: list[NewsItem]
                     if cell.value and len(str(cell.value)) <= LARGO_MAXIMO_HIPERVINCULO:
                         cell.hyperlink = cell.value
                         cell.font = Font(color="0563C1", underline="single")
+            if "tono" in df.columns:
+                tono_col = df.columns.get_loc("tono") + 1
+                for row_idx in range(2, len(df) + 2):
+                    cell = ws.cell(row=row_idx, column=tono_col)
+                    relleno = COLOR_POR_TONO.get(str(cell.value))
+                    if relleno:
+                        cell.fill = relleno
             for col_cells in ws.columns:
                 length = max((len(str(c.value)) if c.value else 0) for c in col_cells)
                 ws.column_dimensions[col_cells[0].column_letter].width = min(max(length + 2, 10), 90)
