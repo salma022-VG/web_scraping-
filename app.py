@@ -37,6 +37,8 @@ COMO SE USA:
 from __future__ import annotations
 
 import os
+import threading
+import uuid
 
 import pandas as pd
 from flask import Flask, jsonify, render_template, request, send_file
@@ -91,6 +93,60 @@ ultima_busqueda: dict = {
     "end": None,
 }
 
+# ---------------------------------------------------------------------
+# "Trabajos" en segundo plano.
+#
+# La busqueda puede tardar 1-2 minutos (o mas, si el servidor donde esta
+# publicada la pagina tiene poca capacidad). Si se hiciera todo dentro de
+# una sola peticion HTTP, algunos servicios de hosting (como Render en su
+# plan gratuito) cortan la conexion antes de que termine, y el navegador
+# nunca recibe respuesta.
+#
+# Para evitar eso, la busqueda se corre en un "hilo" aparte (en segundo
+# plano): el boton "Busqueda" solo la manda a INICIAR y recibe de
+# inmediato un numero de trabajo ("job_id"). Despues, la pagina pregunta
+# cada pocos segundos "¿ya terminaste?" (endpoint /api/buscar/<job_id>)
+# hasta que el trabajo queda listo. Cada una de esas preguntas es rapida,
+# asi que ninguna conexion se queda esperando mucho tiempo.
+# ---------------------------------------------------------------------
+trabajos: dict[str, dict] = {}
+trabajos_candado = threading.Lock()  # evita que dos hilos escriban "trabajos" al mismo tiempo
+
+
+def _ejecutar_busqueda_en_segundo_plano(job_id: str, force_hours: float | None) -> None:
+    """Esto es lo mismo que hacia antes api_buscar(), pero corriendo en un hilo aparte."""
+    try:
+        start, end, label = motor.get_time_window(force_hours=force_hours)
+
+        queries = motor.load_bogota_queries(motor.KEYWORDS_FILE)
+        motor.sync_default_queries_in_code(queries, os.path.abspath(motor.__file__))
+
+        bogota_items = motor.collect_bogota_news(start, end, queries)
+        national_items = motor.collect_national_news(top_n=3)
+        motor.enrich_items(bogota_items + national_items)
+
+        ultima_busqueda.update(
+            bogota_items=bogota_items,
+            national_items=national_items,
+            label=label,
+            start=start,
+            end=end,
+        )
+
+        resultado = {
+            "ventana": label,
+            "desde": start.strftime("%Y-%m-%d %H:%M"),
+            "hasta": end.strftime("%Y-%m-%d %H:%M"),
+            "bogota": _serializar(bogota_items),
+            "nacional": _serializar(national_items),
+        }
+        with trabajos_candado:
+            trabajos[job_id] = {"estado": "listo", "resultado": resultado}
+
+    except Exception as exc:  # noqa: BLE001
+        with trabajos_candado:
+            trabajos[job_id] = {"estado": "error", "error": str(exc)}
+
 
 def _serializar(items: list) -> list[dict]:
     """
@@ -121,9 +177,10 @@ def index():
 def api_buscar():
     """
     Esto es lo que se ejecuta cuando alguien aprieta el boton "Busqueda"
-    en la pagina. Hace exactamente lo mismo que "python monitoreo_noticias.py"
-    en la terminal, pero en vez de guardar el resultado directo a un Excel,
-    lo devuelve como JSON para que la pagina lo pueda mostrar en pantalla.
+    en la pagina. NO hace la busqueda directamente (eso tardaria demasiado
+    para una sola peticion web) -- la manda a correr en segundo plano y
+    devuelve de inmediato un "job_id" para que la pagina pueda preguntar
+    despues por el resultado (ver /api/buscar/<job_id> mas abajo).
     """
     datos = request.get_json(silent=True) or {}
     # El navegador puede pedir una ventana especifica (por ejemplo, "las
@@ -132,37 +189,37 @@ def api_buscar():
     horas_forzadas = datos.get("window_hours")
     force_hours = float(horas_forzadas) if horas_forzadas else None
 
-    start, end, label = motor.get_time_window(force_hours=force_hours)
+    job_id = uuid.uuid4().hex
+    with trabajos_candado:
+        # Se limpian trabajos anteriores: esta pagina la usa una sola
+        # persona a la vez, no hace falta acumular busquedas viejas en memoria.
+        trabajos.clear()
+        trabajos[job_id] = {"estado": "en_progreso"}
 
-    # Paso 1: leer las categorias/palabras de busqueda del Excel editable.
-    queries = motor.load_bogota_queries(motor.KEYWORDS_FILE)
-    motor.sync_default_queries_in_code(queries, os.path.abspath(motor.__file__))
-
-    # Paso 2: buscar las noticias (esto es lo que toma la mayor parte del tiempo).
-    bogota_items = motor.collect_bogota_news(start, end, queries)
-    national_items = motor.collect_national_news(top_n=3)
-
-    # Paso 3: buscarle a cada noticia su link real y su resumen.
-    motor.enrich_items(bogota_items + national_items)
-
-    # Se guarda este resultado para que el boton "Exportar a Excel" lo use despues.
-    ultima_busqueda.update(
-        bogota_items=bogota_items,
-        national_items=national_items,
-        label=label,
-        start=start,
-        end=end,
+    hilo = threading.Thread(
+        target=_ejecutar_busqueda_en_segundo_plano,
+        args=(job_id, force_hours),
+        daemon=True,
     )
+    hilo.start()
 
-    return jsonify(
-        {
-            "ventana": label,
-            "desde": start.strftime("%Y-%m-%d %H:%M"),
-            "hasta": end.strftime("%Y-%m-%d %H:%M"),
-            "bogota": _serializar(bogota_items),
-            "nacional": _serializar(national_items),
-        }
-    )
+    return jsonify({"job_id": job_id})
+
+
+@app.route("/api/buscar/<job_id>", methods=["GET"])
+def api_estado_busqueda(job_id):
+    """
+    La pagina llama a esto cada pocos segundos para preguntar "¿ya
+    terminaste la busqueda con este job_id?". Devuelve estado
+    "en_progreso", "listo" (con el resultado adentro) o "error".
+    """
+    with trabajos_candado:
+        trabajo = trabajos.get(job_id)
+
+    if trabajo is None:
+        return jsonify({"error": "Esa busqueda ya no existe (puede que se haya iniciado otra nueva)."}), 404
+
+    return jsonify(trabajo)
 
 
 @app.route("/api/palabras-clave", methods=["GET"])

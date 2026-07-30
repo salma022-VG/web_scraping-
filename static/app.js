@@ -82,12 +82,19 @@ function llenarTabla(tablaId, noticias) {
   }
 }
 
+// La busqueda real puede tardar 1-2 minutos (o mas, en un servidor con
+// poca capacidad). En vez de dejar UNA sola peticion esperando todo ese
+// tiempo (algunos servicios de hosting la cortan antes de que termine),
+// el flujo es: 1) pedirle al servidor que la INICIE, 2) preguntarle cada
+// pocos segundos si ya termino, hasta que este lista.
+
 async function buscarNoticias() {
   ocultar(cajaError);
   ocultar(seccionResumen);
   ocultar(seccionNacional);
   ocultar(seccionBogota);
   mostrar(estado);
+  estadoTexto.textContent = "Buscando noticias... esto puede tardar 1-2 minutos.";
 
   btnBuscar.disabled = true;
   btnExportar.disabled = true;
@@ -95,30 +102,18 @@ async function buscarNoticias() {
   const horas = selectVentana.value; // "" si es "Automatica"
 
   try {
-    const respuesta = await fetch("/api/buscar", {
+    const respuestaInicio = await fetch("/api/buscar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ window_hours: horas || null }),
     });
+    const inicio = await respuestaInicio.json();
 
-    // Si la busqueda tardo demasiado, el servidor puede cortar la
-    // conexion a mitad de camino y la respuesta llega vacia (no es un
-    // JSON valido). Eso no significa que el navegador este roto: hay que
-    // avisarle al usuario que lo intente de nuevo, no mostrar el error
-    // tecnico crudo.
-    let datos;
-    try {
-      datos = await respuesta.json();
-    } catch {
-      throw new Error(
-        "La busqueda tardo demasiado y el servidor corto la conexion. " +
-        "Intenta de nuevo, o elige una franja mas corta (por ejemplo, 6 horas)."
-      );
+    if (!respuestaInicio.ok) {
+      throw new Error(inicio.error || "No se pudo iniciar la busqueda.");
     }
 
-    if (!respuesta.ok) {
-      throw new Error(datos.error || "Ocurrio un error al buscar las noticias.");
-    }
+    const datos = await esperarResultadoBusqueda(inicio.job_id);
 
     document.getElementById("resVentana").textContent = datos.ventana;
     document.getElementById("resRango").textContent = `${datos.desde} -> ${datos.hasta}`;
@@ -139,6 +134,37 @@ async function buscarNoticias() {
     ocultar(estado);
     btnBuscar.disabled = false;
   }
+}
+
+// Pregunta cada 3 segundos "¿ya terminaste, job X?", hasta por 6 minutos.
+// Cuando el servidor responde "listo", devuelve el resultado de la
+// busqueda; si responde "error", lanza ese error para que se muestre.
+async function esperarResultadoBusqueda(jobId) {
+  const intervaloMs = 3000;
+  const maximoIntentos = 120; // 120 x 3s = 6 minutos como maximo
+  let segundosTranscurridos = 0;
+
+  for (let intento = 0; intento < maximoIntentos; intento++) {
+    await new Promise((resolve) => setTimeout(resolve, intervaloMs));
+    segundosTranscurridos += intervaloMs / 1000;
+    estadoTexto.textContent = `Buscando noticias... (${segundosTranscurridos}s) esto puede tardar 1-2 minutos.`;
+
+    const respuesta = await fetch(`/api/buscar/${jobId}`);
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok) {
+      throw new Error(datos.error || "Ocurrio un error consultando la busqueda.");
+    }
+    if (datos.estado === "listo") {
+      return datos.resultado;
+    }
+    if (datos.estado === "error") {
+      throw new Error(datos.error || "Ocurrio un error al buscar las noticias.");
+    }
+    // Si sigue "en_progreso", el ciclo simplemente vuelve a preguntar.
+  }
+
+  throw new Error("La busqueda esta tardando demasiado. Intenta de nuevo mas tarde.");
 }
 
 async function exportarExcel() {
