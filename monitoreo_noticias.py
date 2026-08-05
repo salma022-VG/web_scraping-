@@ -161,6 +161,8 @@ DEFAULT_BOGOTA_QUERIES: dict[str, list[str]] = {
         "obras Bogota",
         "IDU Bogota",
         "Metro de Bogota",
+        "Bogota running",
+        "Mapa festival del verano Bogota",
     ],
     "Vivienda": [
         "vivienda Bogota",
