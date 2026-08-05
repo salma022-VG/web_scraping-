@@ -193,6 +193,10 @@ DEFAULT_BOGOTA_QUERIES: dict[str, list[str]] = {
         "Olga Lucia Lopez Morales",
         "mapas Bogota",
     ],
+    "Eventos Bogota": [
+        "Bogota Running",
+        "mapa del verano",
+    ],
 }
 
 # Direccion web de donde se sacan las noticias NACIONALES de Colombia
